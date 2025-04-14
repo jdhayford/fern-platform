@@ -39,7 +39,6 @@ export async function createTurbopufferRecords({
   domain,
   org_id,
   authed,
-  splitText,
 }: CreateTurbopufferRecordsOptions): Promise<
   FernTurbopufferRecordWithoutVector[]
 > {
@@ -79,7 +78,7 @@ export async function createTurbopufferRecords({
             type: "markdown",
           });
 
-          return createMarkdownRecords({ base, markdown, splitText });
+          return createMarkdownRecords({ base, markdown });
         }
       )
     )
