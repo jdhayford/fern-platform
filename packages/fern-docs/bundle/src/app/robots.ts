@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import urlJoin from "url-join";
 
 import { withDefaultProtocol } from "@fern-api/ui-core-utils";
-import { getSeoDisabled } from "@fern-docs/edge-config";
+import { getCanonicalUrl, getSeoDisabled } from "@fern-docs/edge-config";
 import {
   HEADER_HOST,
   HEADER_X_FERN_HOST,
@@ -25,11 +25,12 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       },
     };
   }
+  const canonicalUrl = await getCanonicalUrl(domain);
   const basepath = headersList.get("x-fern-basepath") ?? "";
   const sitemap = urlJoin(
-    withDefaultProtocol(domain),
+    withDefaultProtocol(canonicalUrl ?? domain),
     basepath,
-    "/sitemap.xml"
+    "sitemap.xml"
   );
 
   if (await getSeoDisabled(domain)) {
@@ -50,6 +51,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       disallow: conformTrailingSlash("*/~explorer"),
     },
     sitemap,
-    host: domain,
+    host: canonicalUrl ? canonicalUrl : domain,
   };
 }
