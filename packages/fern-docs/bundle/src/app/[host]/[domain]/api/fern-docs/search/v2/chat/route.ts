@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   const openai = createOpenAI({ apiKey: openaiApiKey() });
   const embeddingModel = openai.embedding("text-embedding-3-large");
-  const namespace = `${withoutStaging(domain)}_${embeddingModel.modelId}`;
+  const namespace = `${withoutStaging(domain)}_${embeddingModel.modelId}_test`; // TODO: remove test
 
   const promptTemplate = config.aiChatConfig?.systemPrompt;
   if (metadata == null) {
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
             authed: user != null,
             roles: user?.roles ?? [],
             filters,
-            topK: 5,
+            topK: 10,
           });
           return response.map((hit) => {
             const { domain, pathname, hash } = hit.attributes;
@@ -269,6 +269,7 @@ async function runQueryTurbopuffer(
           });
           return embedding.embedding;
         },
+        mode: "hybrid",
         authed: opts.authed,
         roles: opts.roles,
         filters: opts.filters,

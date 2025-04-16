@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 
-import { FernTurbopufferRecordWithoutVector } from "../types";
+import { TurbopufferRecordWithoutVector } from "../types";
 import { BaseRecord } from "./create-base-record";
 
 interface CreateMarkdownRecordsOptions {
@@ -12,15 +12,10 @@ interface CreateMarkdownRecordsOptions {
 export async function createMarkdownRecords({
   base,
   markdown,
-}: CreateMarkdownRecordsOptions): Promise<
-  FernTurbopufferRecordWithoutVector[]
-> {
-  // console.log("Base URL: ", base.attributes.pathname);
-  // console.log("Markdown length: ", markdown.length);
-  // Function to split markdown into chunks of approximately 10000 characters
+}: CreateMarkdownRecordsOptions): Promise<TurbopufferRecordWithoutVector[]> {
   const splitMarkdownIntoChunks = async (
     text: string,
-    maxChunkSize: number = 7000
+    maxChunkSize: number = 5000
   ): Promise<string[]> => {
     if (text.length <= maxChunkSize) {
       return [text];
@@ -50,8 +45,8 @@ export async function createMarkdownRecords({
       currentPosition = breakPoint;
     }
 
-    // Handle the last chunk - ensure it's also maxChunkSize in length by including overlap
     if (currentPosition < text.length) {
+      // last chunk should also be maxChunkSize
       const startPosition = Math.max(0, text.length - maxChunkSize);
       chunks.push(text.substring(startPosition));
     }
@@ -67,7 +62,7 @@ export async function createMarkdownRecords({
       attributes: {
         ...base.attributes,
         chunk,
-        page_position: i + 1,
+        title: base.attributes.title,
       },
     };
   });

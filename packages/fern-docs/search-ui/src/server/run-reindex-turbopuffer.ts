@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { embed, embedMany } from "ai";
 
 import {
-  FernTurbopufferRecord,
+  TurbopufferRecord,
   queryTurbopuffer,
   turbopufferUpsertTask,
 } from "@fern-docs/search-server/turbopuffer";
@@ -24,9 +24,11 @@ const model = openai.embedding("text-embedding-3-large");
 export const runReindexTurbopuffer = async (
   domain: string
 ): Promise<number> => {
+  console.log("reindexing turbopuffer");
+  console.log(`${domain}_${model.modelId}_test`);
   return turbopufferUpsertTask({
     apiKey: turbopufferApiKey(),
-    namespace: `${domain}_${model.modelId}`,
+    namespace: `${domain}_${model.modelId}_test`, // TODO: remove test
     payload: {
       environment: fdrEnvironment(),
       fernToken: fernToken_admin(),
@@ -46,9 +48,9 @@ export const runSemanticSearchTurbopuffer = async (
   query: string,
   domain: string,
   topK: number = 10
-): Promise<FernTurbopufferRecord[]> => {
+): Promise<TurbopufferRecord[]> => {
   return queryTurbopuffer(query, {
-    namespace: `${domain}_${model.modelId}`,
+    namespace: `${domain}_${model.modelId}_test`, // TODO: remove test
     apiKey: turbopufferApiKey(),
     topK,
     vectorizer: async (text) => {

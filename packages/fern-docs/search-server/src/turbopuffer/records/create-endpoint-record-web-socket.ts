@@ -1,20 +1,17 @@
 import { createHash } from "crypto";
-import { compact, flatten } from "es-toolkit/array";
+import { flatten } from "es-toolkit/array";
 
 import { ApiDefinition, FernNavigation } from "@fern-api/fdr-sdk";
 import { truncateToBytes, withDefaultProtocol } from "@fern-api/ui-core-utils";
 
 import { maybePrepareMdxContent } from "../../utils/prepare-mdx-content";
 import { toDescription } from "../../utils/to-description";
-import {
-  FernTurbopufferRecord,
-  FernTurbopufferRecordWithoutVector,
-} from "../types";
+import { TurbopufferRecord, TurbopufferRecordWithoutVector } from "../types";
 
 interface CreateWebSocketEndpointBaseRecordOptions {
   node: FernNavigation.WebSocketNode;
-  base: Omit<FernTurbopufferRecordWithoutVector, "attributes"> & {
-    attributes: Omit<FernTurbopufferRecordWithoutVector["attributes"], "chunk">;
+  base: Omit<TurbopufferRecordWithoutVector, "attributes"> & {
+    attributes: Omit<TurbopufferRecordWithoutVector["attributes"], "chunk">;
   };
   endpoint: ApiDefinition.WebSocketChannel;
   types: Record<ApiDefinition.TypeId, ApiDefinition.TypeDefinition>;
@@ -25,32 +22,32 @@ export function createEndpointBaseRecordWebSocket({
   node,
   endpoint,
   types,
-}: CreateWebSocketEndpointBaseRecordOptions): FernTurbopufferRecord {
+}: CreateWebSocketEndpointBaseRecordOptions): TurbopufferRecord {
   const prepared = maybePrepareMdxContent(toDescription(endpoint.description));
-  const snippets = compact([
-    ...(base.attributes.code_snippets ?? []),
-    ...(prepared.code_snippets ?? []),
-  ]);
-  const code_snippets = flatten(
-    snippets.map((snippet) => {
-      if (typeof snippet === "string") {
-        return snippet;
-      } else if (typeof snippet === "object") {
-        const output: string[] = [];
-        if (snippet.lang) {
-          output.push(snippet.lang);
-        }
-        if (snippet.code) {
-          output.push(snippet.code);
-        }
-        if (snippet.meta) {
-          output.push(snippet.meta);
-        }
-        return output;
-      }
-      return [];
-    })
-  ).filter((snippet) => snippet != null);
+  // const snippets = compact([
+  //   ...(base.attributes.code_snippets ?? []),
+  //   ...(prepared.code_snippets ?? []),
+  // ]);
+  // const code_snippets = flatten(
+  //   snippets.map((snippet) => {
+  //     if (typeof snippet === "string") {
+  //       return snippet;
+  //     } else if (typeof snippet === "object") {
+  //       const output: string[] = [];
+  //       if (snippet.lang) {
+  //         output.push(snippet.lang);
+  //       }
+  //       if (snippet.code) {
+  //         output.push(snippet.code);
+  //       }
+  //       if (snippet.meta) {
+  //         output.push(snippet.meta);
+  //       }
+  //       return output;
+  //     }
+  //     return [];
+  //   })
+  // ).filter((snippet) => snippet != null);
 
   const keywords: string[] = [];
   if (
@@ -101,8 +98,8 @@ export function createEndpointBaseRecordWebSocket({
         prepared.content != null
           ? truncateToBytes(prepared.content, 50 * 1000)
           : undefined,
-      code_snippets: code_snippets.length > 0 ? code_snippets : undefined,
-      availability: endpoint.availability,
+      // code_snippets: code_snippets.length > 0 ? code_snippets : undefined,
+      // availability: endpoint.availability,
       endpoint_path,
       endpoint_path_alternates: [
         endpoint_path_curly,

@@ -37,7 +37,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const domain = getDocsDomainEdge(req);
   const deleteExisting =
     req.nextUrl.searchParams.get("deleteExisting") === "true";
-  const namespace = `${withoutStaging(domain)}_${embeddingModel.modelId}`;
+  const namespace = `${withoutStaging(domain)}_${embeddingModel.modelId}_test`; // TODO: remove test
 
   try {
     const loader = await createCachedDocsLoader(host, domain);

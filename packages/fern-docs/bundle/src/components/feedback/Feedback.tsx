@@ -22,6 +22,7 @@ export interface FeedbackProps {
   metadata?: Record<string, unknown> | (() => Record<string, unknown>);
   pathname?: string;
   feedbackPrepend?: string;
+  aiChatContext?: string;
 }
 
 export const Feedback: FC<FeedbackProps> = ({
@@ -31,6 +32,7 @@ export const Feedback: FC<FeedbackProps> = ({
   metadata,
   pathname: pathnameProp,
   feedbackPrepend = "",
+  aiChatContext,
 }) => {
   const [sent, setSent] = useState(false);
   const [isHelpful, setIsHelpful] = useState<"yes" | "no" | undefined>();
@@ -94,12 +96,20 @@ export const Feedback: FC<FeedbackProps> = ({
         allowFollowUpViaEmail: showEmailInput === true,
         feedbackQuestion,
         type,
+        aiChatContext,
         ...(typeof metadata === "function" ? metadata() : metadata),
       });
       toast.success("Thank you for submitting feedback!");
       setSent(true);
     },
-    [isHelpful, metadata, feedbackQuestion, feedbackPrepend, type]
+    [
+      isHelpful,
+      metadata,
+      feedbackQuestion,
+      feedbackPrepend,
+      type,
+      aiChatContext,
+    ]
   );
 
   useKeyboardPress({
