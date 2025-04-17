@@ -523,6 +523,7 @@ const AskAIComposer = forwardRef<
     forwardedRef
   ) => {
     const value = typeof props.value === "string" ? props.value : "";
+    const canSubmit = value.trim().split(/\s+/).length >= 1;
     const inputRef = useRef<HTMLTextAreaElement>(null);
     return (
       <div
@@ -559,7 +560,9 @@ const AskAIComposer = forwardRef<
                     stop?.();
                     e.preventDefault();
                   } else {
-                    onSend?.(value);
+                    if (canSubmit) {
+                      onSend?.(value);
+                    }
                     e.preventDefault();
                   }
 
@@ -588,7 +591,7 @@ const AskAIComposer = forwardRef<
             className="rounded-full"
             variant="default"
             onClick={isLoading ? stop : () => onSend?.(value)}
-            disabled={!isLoading}
+            disabled={isLoading}
           >
             {isLoading ? <StopCircle /> : <ArrowUp />}
           </Button>
