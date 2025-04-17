@@ -2,9 +2,11 @@ import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { Url } from "@fern-api/fdr-sdk/api-definition";
 import { APIResponse, FdrAPI } from "@fern-api/fdr-sdk/client/types";
-import { withoutStaging } from "@fern-docs/utils";
+import { isPreviewDomain, withoutStaging } from "@fern-docs/utils";
 
+import { isLocal } from "./isLocal";
 import { loadDocsDefinitionFromS3 } from "./loadDocsDefinitionFromS3";
 import { provideRegistryService } from "./registry";
 
@@ -27,6 +29,20 @@ export const loadWithUrl = cache(
       async () => {
         const domainWithoutStaging = withoutStaging(domain);
 
+        if (isLocal()) {
+          const response =
+            await provideRegistryService().docs.v2.read.getDocsForUrl({
+              url: Url(""),
+            });
+          if (response.ok) {
+            return response.body;
+          }
+          console.error("Failed to load docs", {
+            cause: response.error,
+          });
+          notFound();
+        }
+
         try {
           const response = await loadDocsDefinitionFromS3(
             domainWithoutStaging,
@@ -37,6 +53,11 @@ export const loadWithUrl = cache(
           }
         } catch (error) {
           console.error("Failed to load docs definition:", error);
+        }
+
+        if (isPreviewDomain(domain)) {
+          console.error("Failing to load preview link: ", domain);
+          notFound();
         }
 
         const response =
