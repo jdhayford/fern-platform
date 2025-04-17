@@ -15,7 +15,7 @@ export async function createMarkdownRecords({
 }: CreateMarkdownRecordsOptions): Promise<TurbopufferRecordWithoutVector[]> {
   const splitMarkdownIntoChunks = async (
     text: string,
-    maxChunkSize: number = 5000
+    maxChunkSize: number = 10000
   ): Promise<string[]> => {
     if (text.length <= maxChunkSize) {
       return [text];
@@ -24,25 +24,56 @@ export async function createMarkdownRecords({
     const chunks: string[] = [];
     let currentPosition = 0;
 
-    // Process all chunks except potentially the last one
     while (currentPosition + maxChunkSize < text.length) {
-      // Try to find a natural break point (newline) near the chunk size
       let breakPoint = currentPosition + maxChunkSize;
+      let foundBreak = false;
 
-      // Look for the nearest paragraph break
-      const nextParagraph = text.indexOf("\n\n", breakPoint - 500);
-      if (nextParagraph !== -1 && nextParagraph < breakPoint + 500) {
-        breakPoint = nextParagraph + 2; // Include the newlines
-      } else {
-        // If no paragraph break, look for any newline
-        const nextNewline = text.indexOf("\n", breakPoint - 200);
-        if (nextNewline !== -1 && nextNewline < breakPoint + 200) {
-          breakPoint = nextNewline + 1;
+      const searchStart = Math.max(currentPosition, breakPoint - 1000);
+      const searchEnd = Math.min(text.length, breakPoint + 1000);
+
+      let headerPos = -1;
+
+      // iterate through search-space, find the line before a header-line
+      for (let pos = searchStart; pos < searchEnd; pos) {
+        const newlinePos = text.indexOf("\n", pos);
+        if (newlinePos === -1 || newlinePos >= searchEnd) break;
+
+        const nextLineStart = newlinePos + 1;
+        if (nextLineStart < searchEnd) {
+          const headerRegex = /^#{1,6}\s/;
+          const potentialHeader = text.substring(
+            nextLineStart,
+            Math.min(nextLineStart + 20, text.length)
+          );
+          if (headerRegex.test(potentialHeader)) {
+            headerPos = newlinePos + 1;
+            break;
+          }
+        }
+        pos = newlinePos + 1;
+      }
+
+      if (headerPos !== -1 && headerPos > currentPosition) {
+        breakPoint = headerPos;
+        foundBreak = true;
+      }
+
+      if (!foundBreak) {
+        const nextParagraph = text.indexOf("\n\n", breakPoint - 500);
+        if (nextParagraph !== -1 && nextParagraph < breakPoint + 500) {
+          breakPoint = nextParagraph + 2; // Include the newlines
+          foundBreak = true;
+        } else {
+          const nextNewline = text.indexOf("\n", breakPoint - 200);
+          if (nextNewline !== -1 && nextNewline < breakPoint + 200) {
+            breakPoint = nextNewline + 1;
+            foundBreak = true;
+          }
         }
       }
 
       chunks.push(text.substring(currentPosition, breakPoint));
-      currentPosition = breakPoint;
+      currentPosition = Math.max(0, breakPoint - maxChunkSize / 4); // add some overlap
     }
 
     if (currentPosition < text.length) {
