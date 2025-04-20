@@ -4,3 +4,4 @@ export type {
   ConfigSegmentTuple,
   IndexSegment,
 } from "./types";
+export { LocalAlgoliaService } from "./LocalAlgoliaService";

@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import winston from "winston";
 
 import { FdrDao } from "../db";
-import { type AlgoliaService, AlgoliaServiceImpl } from "../services/algolia";
+import { type AlgoliaService, AlgoliaServiceImpl, LocalAlgoliaService } from "../services/algolia";
 import {
   type AlgoliaIndexSegmentDeleterService,
   AlgoliaIndexSegmentDeleterServiceImpl,
@@ -11,7 +11,7 @@ import {
   type AlgoliaIndexSegmentManagerService,
   AlgoliaIndexSegmentManagerServiceImpl,
 } from "../services/algolia-index-segment-manager";
-import { type AuthService, AuthServiceImpl } from "../services/auth";
+import { type AuthService, AuthServiceImpl, LocalAuthServiceImpl } from "../services/auth";
 import { type DatabaseService, DatabaseServiceImpl } from "../services/db";
 import {
   DocsDefinitionCache,
@@ -26,6 +26,8 @@ import {
 import { type S3Service, S3ServiceImpl } from "../services/s3";
 import { SlackService, SlackServiceImpl } from "../services/slack/SlackService";
 import { type FdrConfig } from "./FdrConfig";
+import { LocalSlackService } from "../services/slack/LocalSlackService";
+import { LocalRevalidatorService } from "../services/revalidator/LocalRevalidatorService";
 
 export interface FdrServices {
   readonly auth: AuthService;
@@ -124,4 +126,22 @@ export class FdrApplication {
   public async initialize(): Promise<void> {
     await this.docsDefinitionCache.initialize();
   }
+}
+
+export function createFdrApplication(
+  config: FdrConfig,
+): FdrApplication {
+  if (config.localModeOverride) {
+    console.log("Running in local override mode");
+    return new FdrApplication(config, {
+      auth: new LocalAuthServiceImpl({
+        orgIds: ['local'],
+      }),
+      algolia: new LocalAlgoliaService(),
+      slack: new LocalSlackService(),
+      revalidator: new LocalRevalidatorService(),
+    });
+  }
+
+  return new FdrApplication(config);
 }

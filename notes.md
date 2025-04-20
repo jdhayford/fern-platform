@@ -1,0 +1,2 @@
+- Need an ORG_ID env var for docker
+- Check local mode to swap to mocks

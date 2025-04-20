@@ -45,6 +45,7 @@ export interface S3Config {
 }
 
 export interface FdrConfig {
+  localModeOverride: boolean;
   venusUrl: string;
   awsAccessKey: string;
   awsSecretKey: string;
@@ -69,7 +70,54 @@ export interface FdrConfig {
 }
 
 export function getConfig(): FdrConfig {
+  const localModeOverride = process.env["LOCAL_MODE_OVERRIDE"] === "true";
+  if (localModeOverride) {
+    const orgName = process.env.ORG_NAME || "local";
+    return {
+      localModeOverride: true,
+      venusUrl: "",
+      awsAccessKey: "minioadmin",
+      awsSecretKey: "minioadmin",
+      publicDocsS3: {
+        bucketName: `${orgName}.docs.buildwithfern.com`,
+        bucketRegion: "global",
+        urlOverride: "http://localhost:9000",
+      },
+      privateDocsS3: {
+        bucketName: `${orgName}.docs.buildwithfern.com`,
+        bucketRegion: "global",
+        urlOverride: "http://localhost:9000",
+      },
+      dbDocsDefinitionS3: {
+        bucketName: `${orgName}.docs.buildwithfern.com`,
+        bucketRegion: "global",
+        urlOverride: "http://localhost:9000",
+      },
+      privateApiDefinitionSourceS3: {
+        bucketName: `${orgName}.docs.buildwithfern.com`,
+        bucketRegion: "global",
+        urlOverride: "http://localhost:9000",
+      },
+      domainSuffix: "docs.buildwithfern.com",
+      algoliaAppId: "local",
+      algoliaAdminApiKey: "local",
+      algoliaSearchApiKey: "local",
+      algoliaSearchIndex: "local",
+      algoliaSearchV2Domains: ["local"],
+      slackToken: "local",
+      logLevel: "info",
+      docsCacheEndpoint: "local",
+      enableCustomerNotifications: false,
+      redisEnabled: false,
+      redisClusteringEnabled: false,
+      applicationEnvironment: "local",
+      cdnPublicDocsUrl: "local",
+    };
+  }
+
+
   return {
+    localModeOverride: false,
     venusUrl: getEnvironmentVariableOrThrow(VENUS_URL_ENV_VAR),
     awsAccessKey: getEnvironmentVariableOrThrow(AWS_ACCESS_KEY_ENV_VAR),
     awsSecretKey: getEnvironmentVariableOrThrow(AWS_SECRET_KEY_ENV_VAR),
