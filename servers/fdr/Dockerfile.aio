@@ -42,9 +42,7 @@ RUN turbo prune @fern-platform/fdr --docker
 FROM base AS installer
 RUN apk add --no-cache libc6-compat
 RUN apk update
-RUN npm install -g pnpm@v9.4.0 fern-api
-RUN apk add git
-RUN npm install -g fern-api
+RUN npm install -g pnpm@v9.4.0
 WORKDIR /app
 
 # Install deps
@@ -67,7 +65,7 @@ RUN pnpm turbo --filter=@fern-platform/fdr compile
 FROM base AS runner
 WORKDIR /app
 
-RUN npm install -g prisma
+RUN npm install -g prisma pnpm@v9.4.0
 
 ENV DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
 ENV LOCAL_MODE_OVERRIDE=true
@@ -80,6 +78,14 @@ ENV MINIO_REGION=global
 # Modify /etc/hosts
 # 127.0.0.1 minio-fern.localhost% 
 
+# Replace this when we the fern-cli with auth override is available via npm
+RUN mkdir -p /usr/local/lib/fern
+COPY fern-cli.tar.gz /usr/local/lib/fern/fern-cli.tar.gz
+RUN tar -xzf /usr/local/lib/fern/fern-cli.tar.gz -C /usr/local/lib/fern
+
 COPY --from=installer /app .
+
+COPY packages /app/packages
+COPY packages/fern-docs /app/packages/fern-docs
 
 ENTRYPOINT ["/bin/sh", "/app/servers/fdr/scripts/run_aio.sh"]
