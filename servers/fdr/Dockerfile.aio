@@ -88,4 +88,7 @@ COPY --from=installer /app .
 COPY packages /app/packages
 COPY packages/fern-docs /app/packages/fern-docs
 
+RUN pnpm install
+RUN QSTASH_TOKEN=foo NEXT_PUBLIC_IS_LOCAL=1 pnpm docs:build
+
 ENTRYPOINT ["/bin/sh", "/app/servers/fdr/scripts/run_aio.sh"]
